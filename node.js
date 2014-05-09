@@ -6,7 +6,6 @@ var app = require('http').createServer(handler)
   , fs = require('fs')
 
 var connections = [];
-var rooms = [];
 
 /*****************************************************************/
 // Socket

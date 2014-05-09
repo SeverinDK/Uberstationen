@@ -9,12 +9,25 @@
 	<canvas id="canvas" width="500px" height="350px">Din browser er lort!</canvas>
 	<script>
 
-		var socket = io.connect('http://188.226.228.111:82');
+		var socket = io.connect('http://localhost:82');
 
 		var canvas;
 		var context;
 
 		var clientID;
+		var clientRoom = 0;
+
+		var chatSettings = {
+			rooms: {
+				0: "0.jpg",
+				1: "1.jpg",
+				2: "2.jpg",
+				3: "3.jpg",
+				4: "4.jpg",
+				666: "666.jpg"
+			}
+		}
+
 		var clients = [];
 		var clientText = "";
 		var clientTyping = false;
@@ -26,39 +39,41 @@
 		function render() {
 			context.clearRect(0,0,500,350);
 
-			//context.fillStyle = "#003366";
-			//context.fillRect(0,0,500,350);
 			context.drawImage(tmpBgImage,0,0,500,350)
 
 			for(var i in clients) {
 				var client = clients[i];
-				context.fillStyle = "Black";
 
-				// Client
-				context.drawImage(image,client.x,client.y,57,78);
+				if(client.room == clientRoom) {
 
-
-				// Client name
-				context.fillStyle = "Black";
-				context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2), client.y+80+1);
-				context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2), client.y+80-1);
-				context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2)+1, client.y+80);
-				context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2)-1, client.y+80);
-				context.fillStyle = "White";
-				context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2), client.y+80);
-
-				// Messages (Move this to a seperate loop later!)
-				if(client.message != "") {
-					if(client.id == clientID && clientTyping) {client.message = "";}
-					context.fillStyle = "White";
-					context.fillRect(client.x,client.y-10,context.measureText(client.message).width+1,10);
 					context.fillStyle = "Black";
-					context.fillText(client.message, client.x+1, client.y-10);
-					context.fillText(client.message, client.x-1, client.y-10);
-					context.fillText(client.message, client.x, client.y+1-10);
-					context.fillText(client.message, client.x, client.y-1-10);
-					context.fillStyle = "#d4e89f";
-					context.fillText(client.message, client.x, client.y-10);
+
+					// Client
+					context.drawImage(image,client.x,client.y,57,78);
+
+
+					// Client name
+					context.fillStyle = "Black";
+					context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2), client.y+80+1);
+					context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2), client.y+80-1);
+					context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2)+1, client.y+80);
+					context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2)-1, client.y+80);
+					context.fillStyle = "White";
+					context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2), client.y+80);
+
+					// Messages (Move this to a seperate loop later!)
+					if(client.message != "") {
+						if(client.id == clientID && clientTyping) {client.message = "";}
+						context.fillStyle = "White";
+						context.fillRect(client.x,client.y-10,context.measureText(client.message).width+1,10);
+						context.fillStyle = "Black";
+						context.fillText(client.message, client.x+1, client.y-10);
+						context.fillText(client.message, client.x-1, client.y-10);
+						context.fillText(client.message, client.x, client.y+1-10);
+						context.fillText(client.message, client.x, client.y-1-10);
+						context.fillStyle = "#d4e89f";
+						context.fillText(client.message, client.x, client.y-10);
+					}
 				}
 			}
 
@@ -90,8 +105,22 @@
 				clients[client].y = 0;
 				clients[client].id = client;
 				clients[client].message = "";
-				client[client].room = 0;
+				clients[client].room = 0;
 			}
+		}
+
+		function setClientRoom(client,room) {
+			if(chatSettings.rooms[room]) {
+				if(client.id == clientID) {
+					clientRoom = room;
+				}
+				client.room = room;
+				tmpBgImage.src = "images/rooms/" + room + ".jpg";
+			}
+		}
+
+		function getClientRoom(client) {
+			return client.room;
 		}
 
 		$(document).ready(function() {
@@ -103,7 +132,7 @@
 			image.src = "images/user_male.png";
 
 			tmpBgImage = new Image();
-			tmpBgImage.src = "images/Skaterpark.jpg";
+			tmpBgImage.src = "images/rooms/0.jpg";
 
 			/*****************************************************************/
 			// Socket Events
@@ -134,8 +163,15 @@
 			});
 
 			socket.on("onClientMessageUpdate", function(data) {
+
 				clients[data.client].message = data.message;
-				setTimeout(function() {
+
+				if(clients[data.client].timeout) {
+					clearTimeout(clients[data.client].timeout);
+					clients[data.client].timeout = null;
+				}
+
+				clients[data.client].timeout = setTimeout(function() {
 					clients[data.client].message = "";
 				}, 15000);
 			});
@@ -144,6 +180,7 @@
 			// Clientside Events
 			/*****************************************************************/
 			$("#canvas").click(function(e) {
+
 				if(clientID) {
 					socket.emit("onClientMove", {id:clientID,x:e.pageX,y:e.pageY});
 				}
@@ -152,6 +189,7 @@
 			$(document).keydown(function(e) {
 				
 				var key = e.which;
+
 				if(key == 27 && clientText != "") {
 					clientText = "";
 					clientTyping = false;
@@ -161,12 +199,20 @@
 			$(document).keypress(function(e) {
 
 				var key = e.which;
+
 				if(!clientTyping) {
 					clientTyping = true;
 				}
 
 				if(key == 13) { // Send message
 					if(clientText != "") {
+
+						// Detect commands
+						var match = clientText.match(/\/goto (\d+)/);
+						if(match != null) {
+							setClientRoom(clientID, match[1]);
+						}
+
 						socket.emit("onClientMessage", {client:clientID,message:clientText});
 						clientText = "";
 						clientTyping = false;
@@ -182,7 +228,13 @@
 					}
 				}
 
+				if(key == 47) {
+					e.preventDefault();
+				}
+
 			});
+
+			$('body').on('contextmenu', '#canvas', function(e){ return false; });
 
 			/*****************************************************************/
 			// Control
