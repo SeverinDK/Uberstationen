@@ -9,7 +9,7 @@
 	<canvas id="canvas" width="500px" height="350px">Din browser er lort!</canvas>
 	<script>
 
-		var socket = io.connect('http://localhost:82');
+		var socket = io.connect('http://localhost:1337');
 
 		var canvas;
 		var context;
@@ -39,7 +39,7 @@
 		function render() {
 			context.clearRect(0,0,500,350);
 
-			context.drawImage(tmpBgImage,0,0,500,350)
+			context.drawImage(tmpBgImage,0,0,500,350);
 
 			for(var i in clients) {
 				var client = clients[i];
@@ -212,8 +212,9 @@
 						if(match != null) {
 							setClientRoom(clientID, match[1]);
 						}
-
-						socket.emit("onClientMessage", {client:clientID,message:clientText});
+						if(match == null) {
+							socket.emit("onClientMessage", {client:clientID,message:clientText});
+						}
 						clientText = "";
 						clientTyping = false;
 					}
