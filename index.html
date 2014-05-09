@@ -110,11 +110,12 @@
 			}
 		}
 
-		function setClientRoom(client,room) {
+		function setClientRoom(room) {
 			if(chatSettings.rooms[room]) {
 				clientRoom = room;
-				clients[client].room = room;
+				clients[clientID].room = room;
 				backgroundImage.src = "images/rooms/" + room + ".jpg";
+				socket.emit("onClientRoomChange",{client:clientID,room:room})
 			}
 		}
 
@@ -175,6 +176,10 @@
 				}, 15000);
 			});
 
+			socket.on("onClientRoomChangeUpdate", function(data) {
+				clients[data.id].room = data.room;
+			})
+
 			/*****************************************************************/
 			// Clientside Events
 			/*****************************************************************/
@@ -209,7 +214,7 @@
 						// Detect commands
 						var match = clientText.match(/\/goto (\d+)/);
 						if(match != null) {
-							setClientRoom(clientID, match[1]);
+							setClientRoom(match[1]);
 						}
 						if(match == null) {
 							socket.emit("onClientMessage", {client:clientID,message:clientText});
