@@ -6,6 +6,7 @@ var app = require('http').createServer(handler)
   , fs = require('fs')
 
 var connections = [];
+var rooms = [];
 
 /*****************************************************************/
 // Socket
@@ -48,5 +49,9 @@ io.sockets.on("connection", function (socket) {
 
   socket.on("onClientMessage", function(data) {
     io.sockets.emit("onClientMessageUpdate", data);
-  })
+  });
+
+  socket.on("onClientRoomChange", function(data) {
+    io.sockets.emit("onClientRoomChangeUpdate",data);
+  });
 });
