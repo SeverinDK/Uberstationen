@@ -12,6 +12,7 @@
 
 		var socket = io.connect(client_settings.chat.host + ':' + client_settings.chat.port);
 
+
 		var canvas;
 		var context;
 
@@ -44,7 +45,7 @@
 
 			for(var i in clients) {
 				var client = clients[i];
-
+				console.log(client.room,clientRoom)
 				if(client.room == clientRoom) {
 
 					context.fillStyle = "Black";
@@ -110,13 +111,12 @@
 			}
 		}
 
-		function setClientRoom(client,room) {
+		function setClientRoom(room) {
 			if(chatSettings.rooms[room]) {
-				if(client.id == clientID) {
-					clientRoom = room;
-				}
-				client.room = room;
+				clientRoom = room;
+				clients[clientID].room = room;
 				backgroundImage.src = "images/rooms/" + room + ".jpg";
+				socket.emit("onClientRoomChange",{id:clientID,room:room})
 			}
 		}
 
@@ -177,6 +177,10 @@
 				}, 15000);
 			});
 
+			socket.on("onClientRoomChangeUpdate", function(data) {
+				clients[data.id].room = data.room;
+			})
+
 			/*****************************************************************/
 			// Clientside Events
 			/*****************************************************************/
@@ -211,7 +215,7 @@
 						// Detect commands
 						var match = clientText.match(/\/goto (\d+)/);
 						if(match != null) {
-							setClientRoom(clientID, match[1]);
+							setClientRoom(match[1]);
 						}
 						if(match == null) {
 							socket.emit("onClientMessage", {client:clientID,message:clientText});
