@@ -111,7 +111,7 @@
 
 		function setClientRoom(client,room) {
 			if(chatSettings.rooms[room]) {
-				if(client.id == clientID) {
+				if(client == clientID) {
 					clientRoom = room;
 				}
 				client.room = room;
