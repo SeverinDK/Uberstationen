@@ -1,3 +1,4 @@
 node_modules/*
 .idea/
-
+assets/config.js
+assets/client_settings.js

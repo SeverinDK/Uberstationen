@@ -3,13 +3,14 @@
 <head>
 	<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
+	<script src="/assets/client_settings.js"></script>
 </head>
 
 <body>
 	<canvas id="canvas" width="500px" height="350px">Din browser er lort!</canvas>
 	<script>
 
-		var socket = io.connect('http://blastoise.mewm.org:1337');
+		var socket = io.connect(client_settings.chat.host + ':' + client_settings.chat.port);
 
 		var canvas;
 		var context;
