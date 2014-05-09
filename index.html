@@ -9,7 +9,8 @@
 	<canvas id="canvas" width="500px" height="350px">Din browser er lort!</canvas>
 	<script>
 
-		var socket = io.connect('http://blastoise.mewm.org:1337');
+		//var socket = io.connect('http://blastoise.mewm.org:1337');
+		var socket = io.connect('http://localhost:1337');
 
 		var canvas;
 		var context;
@@ -43,7 +44,7 @@
 
 			for(var i in clients) {
 				var client = clients[i];
-
+				console.log(client.room,clientRoom)
 				if(client.room == clientRoom) {
 
 					context.fillStyle = "Black";
@@ -112,7 +113,7 @@
 		function setClientRoom(client,room) {
 			if(chatSettings.rooms[room]) {
 				clientRoom = room;
-				client.room = room;
+				clients[client].room = room;
 				backgroundImage.src = "images/rooms/" + room + ".jpg";
 			}
 		}
