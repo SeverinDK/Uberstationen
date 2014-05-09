@@ -18,6 +18,6 @@
   "homepage": "https://github.com/SeverinDK/Uberstationen",
   "dependencies": {
     "socket.io": "^0.9.16",
-    "node-mysql": "~0.3.7"
+    "mysql": "~2.2.0"
   }
 }

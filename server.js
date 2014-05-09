@@ -3,7 +3,9 @@
 /*****************************************************************/
 var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
-  , fs = require('fs')
+  , fs = require('fs');
+
+var Message = require('./src/storage/message');
 
 var connections = [];
 
@@ -47,6 +49,21 @@ io.sockets.on("connection", function (socket) {
   });
 
   socket.on("onClientMessage", function(data) {
+
+	  //Create message to save
+	  var messageEntry = {
+		  user_id: data.client,
+		  room_id: 0,
+		  message: data.message
+	  };
+
+	var msg = new Message(messageEntry);
+
+	  msg.save(function(err) {
+		if(err) throw err;
+		console.log('Message persisted');
+	});
+
     io.sockets.emit("onClientMessageUpdate", data);
   });
 
