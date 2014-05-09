@@ -10,7 +10,7 @@ var connections = [];
 /*****************************************************************/
 // Socket
 /*****************************************************************/
-app.listen(82);
+app.listen(1337);
 
 function handler (req, res) {
   console.log(__dirname + req.url);
