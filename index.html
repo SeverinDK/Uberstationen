@@ -9,7 +9,7 @@
 	<canvas id="canvas" width="500px" height="350px">Din browser er lort!</canvas>
 	<script>
 
-		var socket = io.connect('http://localhost:1337');
+		var socket = io.connect('http://blastoise.mewm.org:1337');
 
 		var canvas;
 		var context;
@@ -34,12 +34,12 @@
 
 		var image;
 
-		var tmpBgImage;
+		var backgroundImage;
 
 		function render() {
 			context.clearRect(0,0,500,350);
 
-			context.drawImage(tmpBgImage,0,0,500,350);
+			context.drawImage(backgroundImage,0,0,500,350);
 
 			for(var i in clients) {
 				var client = clients[i];
@@ -115,7 +115,7 @@
 					clientRoom = room;
 				}
 				client.room = room;
-				tmpBgImage.src = "images/rooms/" + room + ".jpg";
+				backgroundImage.src = "images/rooms/" + room + ".jpg";
 			}
 		}
 
@@ -131,8 +131,8 @@
 			image = new Image();
 			image.src = "images/user_male.png";
 
-			tmpBgImage = new Image();
-			tmpBgImage.src = "images/rooms/0.jpg";
+			backgroundImage = new Image();
+			backgroundImage.src = "images/rooms/0.jpg";
 
 			/*****************************************************************/
 			// Socket Events
