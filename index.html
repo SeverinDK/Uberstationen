@@ -111,9 +111,7 @@
 
 		function setClientRoom(client,room) {
 			if(chatSettings.rooms[room]) {
-				if(client == clientID) {
-					clientRoom = room;
-				}
+				clientRoom = room;
 				client.room = room;
 				backgroundImage.src = "images/rooms/" + room + ".jpg";
 			}
