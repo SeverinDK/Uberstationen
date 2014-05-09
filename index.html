@@ -115,7 +115,7 @@
 				clientRoom = room;
 				clients[clientID].room = room;
 				backgroundImage.src = "images/rooms/" + room + ".jpg";
-				socket.emit("onClientRoomChange",{client:clientID,room:room})
+				socket.emit("onClientRoomChange",{id:clientID,room:room})
 			}
 		}
 
