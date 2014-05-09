@@ -1,0 +1,195 @@
+<html>
+
+<head>
+	<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+	<canvas id="canvas" width="500px" height="350px">Din browser er lort!</canvas>
+	<script>
+
+		var socket = io.connect('http://188.226.228.111:82');
+
+		var canvas;
+		var context;
+
+		var clientID;
+		var clients = [];
+		var clientText = "";
+		var clientTyping = false;
+
+		var image;
+
+		var tmpBgImage;
+
+		function render() {
+			context.clearRect(0,0,500,350);
+
+			//context.fillStyle = "#003366";
+			//context.fillRect(0,0,500,350);
+			context.drawImage(tmpBgImage,0,0,500,350)
+
+			for(var i in clients) {
+				var client = clients[i];
+				context.fillStyle = "Black";
+
+				// Client
+				context.drawImage(image,client.x,client.y,57,78);
+
+
+				// Client name
+				context.fillStyle = "Black";
+				context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2), client.y+80+1);
+				context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2), client.y+80-1);
+				context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2)+1, client.y+80);
+				context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2)-1, client.y+80);
+				context.fillStyle = "White";
+				context.fillText(client.id, client.x+28-(context.measureText(client.id).width/2), client.y+80);
+
+				// Messages (Move this to a seperate loop later!)
+				if(client.message != "") {
+					if(client.id == clientID && clientTyping) {client.message = "";}
+					context.fillStyle = "White";
+					context.fillRect(client.x,client.y-10,context.measureText(client.message).width+1,10);
+					context.fillStyle = "Black";
+					context.fillText(client.message, client.x+1, client.y-10);
+					context.fillText(client.message, client.x-1, client.y-10);
+					context.fillText(client.message, client.x, client.y+1-10);
+					context.fillText(client.message, client.x, client.y-1-10);
+					context.fillStyle = "#d4e89f";
+					context.fillText(client.message, client.x, client.y-10);
+				}
+			}
+
+			if(clientText != "") {
+				var client = clients[clientID];
+				context.fillStyle = "#d4e89f";
+				context.fillRect(client.x,client.y-10,context.measureText(clientText).width+1,10);
+				context.fillStyle = "Black";
+				context.fillText(clientText, client.x+1, client.y-10);
+				context.fillText(clientText, client.x-1, client.y-10);
+				context.fillText(clientText, client.x, client.y+1-10);
+				context.fillText(clientText, client.x, client.y-1-10);
+				context.fillStyle = "White";
+				context.fillText(clientText, client.x, client.y-10);
+			}
+		}
+
+		function newClient(client) {
+
+			// If we dont have a local client yet, then set it.
+			if(!clientID) {
+				clientID = client;
+			}
+
+			// Set the new client.
+			if(!clients[client]) {
+				clients[client] = [];
+				clients[client].x = 0;
+				clients[client].y = 0;
+				clients[client].id = client;
+				clients[client].message = "";
+			}
+		}
+
+		$(document).ready(function() {
+			canvas = document.getElementById("canvas");
+			context = canvas.getContext("2d");
+			context.textBaseline="top"; 
+
+			image = new Image();
+			image.src = "images/user_male.png";
+
+			tmpBgImage = new Image();
+			tmpBgImage.src = "images/Skaterpark.jpg";
+
+			/*****************************************************************/
+			// Socket Events
+			/*****************************************************************/
+			socket.on("onClientConnect", function(data) {
+				newClient(data.client);
+				connections = JSON.parse(data.connections);
+				for(var i in connections) {
+					var client = connections[i];
+					newClient(client);
+				}
+			});
+
+			socket.on("onClientDisconnect", function(client) {
+				if(clients[client]) {
+					delete clients[client];
+				}
+			});
+
+			socket.on("onClientMoveUpdate", function(data) {
+				if(!clients[data.id]) {
+					newClient(data.id);
+				}
+				if(clients[data.id]) {
+					clients[data.id].x = data.x;
+					clients[data.id].y = data.y;
+				}
+			});
+
+			socket.on("onClientMessageUpdate", function(data) {
+				clients[data.client].message = data.message;
+				setTimeout(function() {
+					clients[data.client].message = "";
+				}, 15000);
+			});
+
+			/*****************************************************************/
+			// Clientside Events
+			/*****************************************************************/
+			$("#canvas").click(function(e) {
+				if(clientID) {
+					socket.emit("onClientMove", {id:clientID,x:e.pageX,y:e.pageY});
+				}
+			});
+
+			$(document).keydown(function(e) {
+				
+				var key = e.which;
+				if(key == 27 && clientText != "") {
+					clientText = "";
+					clientTyping = false;
+				}
+			});
+
+			$(document).keypress(function(e) {
+
+				var key = e.which;
+				if(!clientTyping) {
+					clientTyping = true;
+				}
+
+				if(key == 13) { // Send message
+					if(clientText != "") {
+						socket.emit("onClientMessage", {client:clientID,message:clientText});
+						clientText = "";
+						clientTyping = false;
+					}
+				} else if(key == 8) { // Remove last char from string(Backspace)
+					if(clientText != "") {
+						clientText = clientText.substring(0, clientText.length - 1);
+					}
+					return false;
+				} else {
+					if(key != 27 && key != 0) {
+						clientText += String.fromCharCode(key);
+					}
+				}
+
+			});
+
+			/*****************************************************************/
+			// Control
+			/*****************************************************************/
+			setInterval(render,15);
+		});
+
+	</script>
+</body>
+
+</html>
