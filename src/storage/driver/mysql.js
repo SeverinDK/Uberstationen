@@ -29,12 +29,19 @@ MysqlDriver.prototype.connect = function() {
 MysqlDriver.prototype.persist = function(entity, cb) {
 
 	var entry  = entity.entry;
-	console.log(entry);
 	var query = this.connection.query('INSERT INTO ' + entity.table + ' SET ?', entry, function(err, result) {
 		cb(err);
 	});
 	console.log(query.sql);
 
+};
+
+
+MysqlDriver.prototype.fetchAll = function(table, cb) {
+	var sql = 'SELECT * FROM ' + table + ' ORDER BY id ASC';
+	var query = this.connection.query(sql, function(err, result) {
+
+	});
 };
 
 module.exports = MysqlDriver;

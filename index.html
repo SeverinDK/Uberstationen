@@ -167,6 +167,8 @@
 
 				clients[data.client].message = data.message;
 
+				$("#chatbox").append(data.client + ': ' + data.message);
+
 				if(clients[data.client].timeout) {
 					clearTimeout(clients[data.client].timeout);
 					clients[data.client].timeout = null;
@@ -179,7 +181,7 @@
 
 			socket.on("onClientRoomChangeUpdate", function(data) {
 				clients[data.id].room = data.room;
-			})
+			});
 
 			/*****************************************************************/
 			// Clientside Events
@@ -250,5 +252,5 @@
 
 	</script>
 </body>
-
+<div id="chatbox"></div>
 </html>
