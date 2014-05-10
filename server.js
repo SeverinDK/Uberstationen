@@ -35,6 +35,19 @@ io.sockets.on("connection", function (socket) {
     connections[socket.id] = socket.id;
   }
 
+	//Fetch messages
+	var fetchMessage = new Message;
+	fetchMessage.all(function(err, results) {
+
+		if(err) throw err;
+		console.log('fetchMessage.all invoked');
+		socket.emit("populateChatBox", results);
+		//io.sockets.socket(socket.id).emit("populateChatBox", results);
+
+	});
+
+
+
   io.sockets.emit("onClientConnect", {client:socket.id,connections:JSON.stringify(connections)});
 
   socket.on('disconnect', function() {
@@ -42,6 +55,9 @@ io.sockets.on("connection", function (socket) {
       delete connections[socket.id];
     }
     io.sockets.emit("onClientDisconnect", socket.id);
+
+
+
   });
 
   socket.on("onClientMove", function(data) {

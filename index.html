@@ -124,6 +124,11 @@
 			return client.room;
 		}
 
+		function chatMessage(string) {
+			$("#chatbox").append(string + '<br>');
+			return true;
+		}
+
 		$(document).ready(function() {
 			canvas = document.getElementById("canvas");
 			context = canvas.getContext("2d");
@@ -145,6 +150,21 @@
 					var client = connections[i];
 					newClient(client);
 				}
+
+
+			});
+
+			//Listen if we should populate chatbox
+			socket.on('populateChatBox', function(results) {
+				$("#chatbox").html('');
+				for(var index in results) {
+					console.log(index);
+					if(results.hasOwnProperty(index)) {
+						var val = results[index];
+						chatMessage(val.user_id + ': ' + val.message);
+					}
+				}
+
 			});
 
 			socket.on("onClientDisconnect", function(client) {
@@ -167,7 +187,7 @@
 
 				clients[data.client].message = data.message;
 
-				$("#chatbox").append(data.client + ': ' + data.message);
+				chatMessage(data.client + ': ' + data.message + '<br>');
 
 				if(clients[data.client].timeout) {
 					clearTimeout(clients[data.client].timeout);

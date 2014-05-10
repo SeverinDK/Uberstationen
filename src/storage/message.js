@@ -34,4 +34,13 @@ Message.prototype.save = function(cb) {
 
 };
 
+Message.prototype.all = function(cb) {
+	this.storage.fetchAll('chat_messages', function(err, result) {
+		if(err) throw err;
+
+		cb(err, result);
+
+	});
+};
+
 module.exports = Message;

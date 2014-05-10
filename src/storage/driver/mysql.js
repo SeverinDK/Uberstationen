@@ -40,8 +40,9 @@ MysqlDriver.prototype.persist = function(entity, cb) {
 MysqlDriver.prototype.fetchAll = function(table, cb) {
 	var sql = 'SELECT * FROM ' + table + ' ORDER BY id ASC';
 	var query = this.connection.query(sql, function(err, result) {
-
+		cb(err, result);
 	});
+	console.log(query.sql);
 };
 
 module.exports = MysqlDriver;
